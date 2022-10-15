@@ -6,6 +6,7 @@
 
 .alias inpos v0
 .alias intc0 v1
+.alias incol v2
 
 .constf const(0.0, 1.0, 1.0, 1.0)
 .alias ZEROS const.xxxx
@@ -21,7 +22,7 @@
 	dp4 outpos.w, projection[3], r0
 
 	mov outtc0, intc0
-	mov outclr, ONES
+	mov outclr, incol
 
 	end
 .end

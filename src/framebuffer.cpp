@@ -579,13 +579,11 @@ void w4_framebufferBlit_tpl (const uint8_t* sprite, int dstX, int dstY, int widt
     // Iterate pixels in rectangle
     if (!flipX && !flipY && !rotate) {
         if (bpp2 && colors == 0x3210) {
-            for (int y = clipYMin; y < clipYMax; y++) {
+            int ty = dstY;
+            for (int y = clipYMin; y < clipYMax; y++, ty++) {
                 int bitIndex = (srcY + y) * srcStride + srcX;
-                const int ty = dstY + y;
-                for (int x = clipXMin; x < clipXMax; x++, bitIndex++) {
-                    // Calculate sprite target coords
-                    const int tx = dstX + x;
-                    
+                int tx = dstX;
+                for (int x = clipXMin; x < clipXMax; x++, tx++, bitIndex++) {
                     // Sample the sprite to get a color index
                     uint8_t byte = sprite[bitIndex >> 2];
                     int shift = 6 - ((bitIndex & 0x03) << 1);
@@ -596,13 +594,11 @@ void w4_framebufferBlit_tpl (const uint8_t* sprite, int dstX, int dstY, int widt
                 }
             }
         } else {
-            for (int y = clipYMin; y < clipYMax; y++) {
+            int ty = dstY;
+            for (int y = clipYMin; y < clipYMax; y++, ty++) {
                 int bitIndex = (srcY + y) * srcStride + srcX;
-                const int ty = dstY + y;
-                for (int x = clipXMin; x < clipXMax; x++, bitIndex++) {
-                    // Calculate sprite target coords
-                    const int tx = dstX + x;
-                    
+                int tx = dstX;
+                for (int x = clipXMin; x < clipXMax; x++, tx++, bitIndex++) {
                     // Sample the sprite to get a color index
                     int colorIdx;
                     if (bpp2) {
