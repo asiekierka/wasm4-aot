@@ -51,6 +51,10 @@ void w4_runtimeSetMouse (int16_t x, int16_t y, uint8_t buttons) {
     memory.mouseButtons = buttons;
 }
 
+void w4_runtimeClearMouse (void) {
+    memory.mouseButtons = 0;
+}
+
 void w4_runtimeBlit (const uint8_t* sprite, int x, int y, int width, int height, int flags) {
     // debug_printf("blit: %p, %d, %d, %d, %d, %d\n", sprite, x, y, width, height, flags);
 

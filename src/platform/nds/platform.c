@@ -68,6 +68,19 @@ bool platform_update(void) {
         | ((held_keys & KEY_B) ? W4_BUTTON_X : 0)
         | ((held_keys & KEY_A) ? W4_BUTTON_Z : 0);
     w4_runtimeSetGamepad(0, w4_held_keys);
+
+    if (held_keys & KEY_TOUCH) {
+        touchPosition touchPos;
+        touchRead(&touchPos);
+
+        int x1 = (256 - W4_WIDTH) >> 1;
+        int y1 = (192 - W4_HEIGHT) >> 1;
+        
+        w4_runtimeSetMouse(touchPos.px - x1, touchPos.py - y1, W4_MOUSE_LEFT);
+    } else {
+        w4_runtimeClearMouse();
+    }
+
     return true;
 }
 

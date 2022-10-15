@@ -28,7 +28,7 @@ fi
 # Compile
 case "$PLATFORM" in
 gba)
-	if [ -z "$DEVKITPRO"]; then
+	if [ -z "$DEVKITPRO" ]; then
 		echo "Environment variable DEVKITPRO not set!"
 		exit
 	fi
@@ -36,7 +36,7 @@ gba)
 	cp wasm4-aot-gba.gba "$OUTPUT".nds
 	;;
 nds)
-	if [ -z "$DEVKITPRO"]; then
+	if [ -z "$DEVKITPRO" ]; then
 		echo "Environment variable DEVKITPRO not set!"
 		exit
 	fi
@@ -44,7 +44,7 @@ nds)
 	cp wasm4-aot-nds.nds "$OUTPUT".nds
 	;;
 3ds)
-	if [ -z "$DEVKITPRO"]; then
+	if [ -z "$DEVKITPRO" ]; then
 		echo "Environment variable DEVKITPRO not set!"
 		exit
 	fi

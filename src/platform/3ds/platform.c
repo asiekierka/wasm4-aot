@@ -1,3 +1,5 @@
+#include <c3d/framebuffer.h>
+#include <c3d/texenv.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <3ds.h>
@@ -26,8 +28,6 @@ void platform_init(void) {
     // video init
     drawOnBottomScreen = false;
 
-	C3D_TexEnv* texEnv;
-
 	gfxInitDefault();
 	gfxSet3D(false);
 	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
@@ -52,13 +52,16 @@ void platform_init(void) {
 	Mtx_OrthoTilt(&proj_top, 0.0, 400.0, 0.0, 240.0, -1.0, 1.0, true);
 	Mtx_OrthoTilt(&proj_bottom, 0.0, 320.0, 0.0, 240.0, -1.0, 1.0, true);
 
+	C3D_TexEnv* texEnv;
+
 	texEnv = C3D_GetTexEnv(0);
 	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_TEXTURE0, 0, 0);
+    C3D_TexEnvColor(texEnv, 0);
 	C3D_TexEnvOpRgb(texEnv, 0, 0, 0);
 	C3D_TexEnvOpAlpha(texEnv, 0, 0, 0);
 	C3D_TexEnvFunc(texEnv, C3D_Both, GPU_MODULATE);
 
-	C3D_DepthTest(true, GPU_GEQUAL, GPU_WRITE_ALL);
+	C3D_DepthTest(true, GPU_ALWAYS, GPU_WRITE_ALL);
 
     // audio init
 #ifdef PLATFORM_HAS_APU
@@ -72,6 +75,9 @@ bool platform_update(void) {
     }
 
     scanKeys();
+    if (keysDown() & (KEY_L | KEY_R)) {
+        drawOnBottomScreen = !drawOnBottomScreen;
+    }
     uint32_t held_keys = keysDown() | keysHeld();
     uint8_t w4_held_keys =
         ((held_keys & KEY_UP) ? W4_BUTTON_UP : 0)
@@ -81,6 +87,18 @@ bool platform_update(void) {
         | ((held_keys & KEY_B) ? W4_BUTTON_X : 0)
         | ((held_keys & KEY_A) ? W4_BUTTON_Z : 0);
     w4_runtimeSetGamepad(0, w4_held_keys);
+
+    if (held_keys & KEY_TOUCH) {
+        touchPosition touchPos;
+        touchRead(&touchPos);
+
+        int x1 = ((drawOnBottomScreen ? 320 : 400) - W4_WIDTH) >> 1;
+        int y1 = (240 - W4_HEIGHT) >> 1;
+        
+        w4_runtimeSetMouse(touchPos.px - x1, touchPos.py - y1, W4_MOUSE_LEFT);
+    } else {
+        w4_runtimeClearMouse();
+    }
 
     return true;
 }
@@ -111,6 +129,11 @@ void platform_draw(void) {
 		GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
 	);
 
+	C3D_TexEnv* texEnv;
+
+	texEnv = C3D_GetTexEnv(0);
+	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_TEXTURE0, 0, 0);
+
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
     C3D_FrameDrawOn(drawOnBottomScreen ? target_bottom : target_top);
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, shader.proj_loc, drawOnBottomScreen ? &proj_bottom : &proj_top);
@@ -125,6 +148,30 @@ void platform_draw(void) {
 	float tymax = 0.0f;
 
 	C3D_TexBind(0, &tex);
+	C3D_ImmDrawBegin(GPU_TRIANGLE_STRIP);
+		C3D_ImmSendAttrib(xmin, ymin, 0.0f, 0.0f);
+		C3D_ImmSendAttrib(txmin, tymin, 0.0f, 0.0f);
+
+		C3D_ImmSendAttrib(xmax, ymin, 0.0f, 0.0f);
+		C3D_ImmSendAttrib(txmax, tymin, 0.0f, 0.0f);
+
+		C3D_ImmSendAttrib(xmin, ymax, 0.0f, 0.0f);
+		C3D_ImmSendAttrib(txmin, tymax, 0.0f, 0.0f);
+
+		C3D_ImmSendAttrib(xmax, ymax, 0.0f, 0.0f);
+		C3D_ImmSendAttrib(txmax, tymax, 0.0f, 0.0f);
+	C3D_ImmDrawEnd();
+
+    C3D_FrameDrawOn(!drawOnBottomScreen ? target_bottom : target_top);
+	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, shader.proj_loc, !drawOnBottomScreen ? &proj_bottom : &proj_top);
+    
+	xmin = 0;
+	ymin = 0;
+    xmax = 400;
+    ymax = 240;
+	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_PRIMARY_COLOR, 0, 0);
+
+	C3D_TexBind(0, NULL);
 	C3D_ImmDrawBegin(GPU_TRIANGLE_STRIP);
 		C3D_ImmSendAttrib(xmin, ymin, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmin, tymin, 0.0f, 0.0f);
