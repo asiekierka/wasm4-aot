@@ -32,6 +32,8 @@ int main(int argc, char **argv) {
     w4_runtimeInit();
 
 #ifdef BUILD_USE_WASM2C
+    wasm_rt_init();
+
     Z_cart_init_module();
     Z_cart_instantiate(&instance, &env_instance);
 
@@ -54,6 +56,8 @@ int main(int argc, char **argv) {
     }
 
     Z_cart_free(&instance);
+
+    wasm_rt_free();
 #endif
 
 #ifdef BUILD_USE_W2C2

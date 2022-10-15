@@ -137,6 +137,17 @@ psp)
 	zip -9 -r ../"$OUTPUT"-psp.zip GAME
 	cd ..
 	;;
+pc-sdl2)
+	cd meson
+	if [ -d build ]; then
+		rm -r build
+	fi
+	meson build
+	cd build
+	ninja
+	cd ../..
+	cp meson/build/wasm4-aot "$OUTPUT"
+	;;
 *)
 	echo "Unknown platform "$PLATFORM"!"
 	exit
