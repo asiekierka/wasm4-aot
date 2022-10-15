@@ -9,6 +9,7 @@
 #include "wasm-cart.h"
 
 #ifdef BUILD_USE_WASM2C
+#include "cart.h"
 #include "wasm-rt.h"
 #include "wasm-rt-impl.h"
 #include "wasm-rt-std.h"

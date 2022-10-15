@@ -3,22 +3,32 @@
 usage() {
 	echo "Usage: $0 [options] cartridge.wasm platform [output_basename]" 1>&2
 	echo "" 1>&2
+	echo "  -a x   Set author name" 1>&2
 	echo "  -d     Enable debug output (nds, 3ds)" 1>&2
 	echo "  -f x   Select C transpiler: wasm2c, w2c2 (default)" 1>&2
+	echo "  -n x   Set game name" 1>&2
 	exit 1
 }
 
 DEBUG=
 FRONTEND=w2c2
+GAME_AUTHOR=-
+GAME_NAME=
 
-while getopts ":df:" opt; do
+while getopts ":a:df:n:" opt; do
 	case "${opt}" in
+		a)
+			GAME_AUTHOR="${OPTARG}"
+			;;
 		d)
 			DEBUG=true
 			;;
 		f)
-			FRONTEND=${OPTARG}
+			FRONTEND="${OPTARG}"
 			((s == "wasm2c" || s == "w2c2")) || usage
+			;;
+		n)
+			GAME_NAME="${OPTARG}"
 			;;
 		*)
 			usage
@@ -41,6 +51,10 @@ if [ -z "$OUTPUT" ]; then
 	OUTPUT="${CARTRIDGE_BASENAME%.*}"
 fi
 
+if [ -z "$GAME_NAME" ]; then
+	GAME_NAME="$OUTPUT"
+fi
+
 # Generate build_config.h
 if [ ! -d config ] ; then
 	mkdir config
@@ -56,6 +70,8 @@ w2c2)
 	echo "#define BUILD_USE_W2C2 1" >> config/build_config.h
 	;;
 esac
+echo "#define BUILD_GAME_NAME \""$GAME_NAME"\"" >> config/build_config.h
+echo "#define BUILD_GAME_AUTHOR \""$GAME_AUTHOR"\"" >> config/build_config.h
 if [ ! -z "$DEBUG" ]; then
 	echo "#define DEBUG 1" >> config/build_config.h
 fi
@@ -84,6 +100,7 @@ gba)
 		echo "Environment variable DEVKITPRO not set!"
 		exit
 	fi
+	GAME_NAME="$GAME_NAME" GAME_AUTHOR="$GAME_AUTHOR" \
 	make -f Makefile.dkp-gba
 	cp wasm4-aot-gba.gba "$OUTPUT".gba
 	;;
@@ -92,6 +109,7 @@ nds)
 		echo "Environment variable DEVKITPRO not set!"
 		exit
 	fi
+	GAME_NAME="$GAME_NAME" GAME_AUTHOR="$GAME_AUTHOR" \
 	make -f Makefile.dkp-nds
 	cp wasm4-aot-nds.nds "$OUTPUT".nds
 	;;
@@ -100,10 +118,15 @@ nds)
 		echo "Environment variable DEVKITPRO not set!"
 		exit
 	fi
+	GAME_NAME="$GAME_NAME" GAME_AUTHOR="$GAME_AUTHOR" \
 	make -f Makefile.dkp-3ds
 	cp wasm4-aot-3ds.3dsx "$OUTPUT".3dsx
 	;;
 psp)
+	if [ -f build-psp/PARAM.SFO ]; then
+		rm build-psp/PARAM.SFO
+	fi
+	GAME_NAME="$GAME_NAME" GAME_AUTHOR="$GAME_AUTHOR" \
 	make -f Makefile.psp
 	if [ -d build-psp/GAME ]; then
 		rm -r build-psp/GAME

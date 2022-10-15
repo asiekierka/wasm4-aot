@@ -8,14 +8,15 @@ CFLAGS = -g -Wall -Wno-unused-label -Wno-pointer-sign -Wno-unused-value -Wno-unu
 LDFLAGS = -g
 TARGET = $(BUILDDIR)/wasm4-aot-psp
 EXTRA_TARGETS = $(BUILDDIR)/EBOOT.PBP
-PSP_EBOOT_TITLE = wasm4-aot-psp
-PSP_EBOOT_ICON = assets/psp-icon0.png
-PSP_EBOOT = $(BUILDDIR)/EBOOT.PBP
+PSP_EBOOT_TITLE := ${GAME_NAME}
+PSP_EBOOT_ICON := assets/psp-icon0.png
+PSP_EBOOT := $(BUILDDIR)/EBOOT.PBP
+PSP_EBOOT_SFO = $(BUILDDIR)/PARAM.SFO
 
 vpath %.c cart src src/apu src/platform/psp
 vpath %.cpp cart src src/apu src/platform/psp
 
-CFLAGS += -Icart -Isrc -Isrc/apu -Isrc/platform/psp -Isrc/wasm2c
+CFLAGS += -Icart -Isrc -Isrc/apu -Isrc/platform/psp -Isrc/wasm2c -Iconfig
 
 OBJS =	$(OBJDIR)/cart.o \
 	$(OBJDIR)/apu.o \

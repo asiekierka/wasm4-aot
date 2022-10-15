@@ -38,6 +38,10 @@ INCLUDES	:= config $(BUILD) src src/apu src/platform/3ds cart src/wasm2c
 DATA		:=	data
 GRAPHICS	:=	gfx
 GFXBUILD	:=	$(BUILD)
+APP_TITLE	:= ${GAME_NAME}
+APP_DESCRIPTION := Powered by wasm4aot
+APP_AUTHOR	:= ${GAME_AUTHOR}
+ICON		:= assets/icon48.png
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
