@@ -29,6 +29,7 @@
 ---------------------------------------------------------------------------------*/
 #include <stdbool.h>
 #include <nds.h>
+#include "build_config.h"
 #include "platform_shim.h"
 #ifdef PLATFORM_HAS_APU
 #include "apu.h"
@@ -134,7 +135,7 @@ void apu_receive_data(void * address, void * userdata) {
 	REG_SOUNDCNT = SOUND_ENABLE;
 	REG_MASTER_VOLUME = 127;
 
-	SCHANNEL_SOURCE(10) = apu_initial_data->sample_triangle;
+	SCHANNEL_SOURCE(10) = (uint32_t) (apu_initial_data->sample_triangle);
 	SCHANNEL_REPEAT_POINT(10) = 0;
 	SCHANNEL_LENGTH(10) = 8;
 }

@@ -23,7 +23,7 @@ include $(DEVKITARM)/gba_rules
 TARGET		:= wasm4-aot-gba
 BUILD		:= build-dkp-gba
 SOURCES		:= src src/platform/gba-tonc cart
-INCLUDES	:= src src/platform/gba-tonc cart
+INCLUDES	:= config src src/platform/gba-tonc cart src/wasm2c
 DATA		:=
 MUSIC		:=
 

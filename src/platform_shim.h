@@ -1,5 +1,6 @@
 #pragma once
 
+#include "build_config.h"
 #include "platform.h"
 
 #ifndef PLATFORM_HAS_DRAW_PARTIAL

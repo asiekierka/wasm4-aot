@@ -17,7 +17,7 @@ include $(DEVKITARM)/ds_rules
 BUILD		:=	build-dkp-nds-arm7
 TARGET   := $(BUILD)/wasm4-aot-nds
 SOURCES		:=	src/apu src/platform/nds/arm7
-INCLUDES	:=	src src/apu src/platform/nds src/platform/nds/arm7 build-dkp-nds-arm7
+INCLUDES	:=	config src src/apu src/platform/nds src/platform/nds/arm7 build-dkp-nds-arm7
 DATA		:=
 
 #---------------------------------------------------------------------------------

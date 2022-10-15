@@ -34,7 +34,7 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:= wasm4-aot-3ds
 BUILD		:= build-dkp-3ds
 SOURCES		:= src src/apu src/platform/3ds cart
-INCLUDES	:= $(BUILD) src src/apu src/platform/3ds cart
+INCLUDES	:= config $(BUILD) src src/apu src/platform/3ds cart src/wasm2c
 DATA		:=	data
 GRAPHICS	:=	gfx
 GFXBUILD	:=	$(BUILD)

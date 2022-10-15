@@ -27,7 +27,7 @@ include $(DEVKITARM)/ds_rules
 BUILD	 := build-dkp-nds-arm9
 TARGET   := $(BUILD)/wasm4-aot-nds
 SOURCES	 := src src/apu src/platform/nds cart
-INCLUDES := src src/apu src/platform/nds cart
+INCLUDES := config src src/apu src/platform/nds cart src/wasm2c
 DATA     :=
 GRAPHICS :=
 AUDIO    :=

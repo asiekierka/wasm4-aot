@@ -65,6 +65,10 @@ void platform_init(void) {
 #ifdef PLATFORM_HAS_APU
     platform_apu_init();
 #endif
+
+#ifdef DEBUG
+	consoleInit(GFX_BOTTOM, NULL);
+#endif
 }
 
 bool platform_update(void) {
@@ -102,6 +106,10 @@ bool platform_update(void) {
 }
 
 void platform_draw(void) {
+#ifdef DEBUG
+	drawOnBottomScreen = false;
+#endif
+
     uint32_t palette[4];
     for (int i = 0; i < 4; i++) {
         palette[i] = (w4_memory.palette[i] << 8) | 0xFF;
@@ -165,6 +173,7 @@ void platform_draw(void) {
         C3D_ImmSendAttrib(1.0f, 1.0f, 1.0f, 1.0f);
 	C3D_ImmDrawEnd();
 
+#ifndef DEBUG
     C3D_FrameDrawOn(!drawOnBottomScreen ? target_bottom : target_top);
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, shader.proj_loc, !drawOnBottomScreen ? &proj_bottom : &proj_top);
     
@@ -196,6 +205,7 @@ void platform_draw(void) {
 		C3D_ImmSendAttrib(txmax, tymax, 0.0f, 0.0f);
         C3D_ImmSendAttrib(0.0f, 0.0f, 0.0f, 1.0f);
 	C3D_ImmDrawEnd();
+#endif
 
 	C3D_FrameEnd(0);
 }

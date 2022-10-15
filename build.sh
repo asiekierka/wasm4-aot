@@ -1,29 +1,81 @@
 #!/bin/bash
 
-#while getopts opt; do
-#
-#done
-#
-#shift $((OPTIND - 1))
+usage() {
+	echo "Usage: $0 [options] cartridge.wasm platform [output_basename]" 1>&2
+	echo "" 1>&2
+	echo "  -d     Enable debug output (nds, 3ds)" 1>&2
+	echo "  -f x   Select C transpiler: wasm2c, w2c2 (default)" 1>&2
+	exit 1
+}
+
+DEBUG=
+FRONTEND=w2c2
+
+while getopts ":df:" opt; do
+	case "${opt}" in
+		d)
+			DEBUG=true
+			;;
+		f)
+			FRONTEND=${OPTARG}
+			((s == "wasm2c" || s == "w2c2")) || usage
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+
+shift $((OPTIND - 1))
 
 CARTRIDGE=$1
 PLATFORM=$2
 OUTPUT=$3
+
+if [ -z "$CARTRIDGE" ] || [ -z "$PLATFORM" ]; then
+	usage
+fi
+
 if [ -z "$OUTPUT" ]; then
 	CARTRIDGE_BASENAME=`basename "$CARTRIDGE"`
 	OUTPUT="${CARTRIDGE_BASENAME%.*}"
 fi
 
-# Build W2C2
-cd w2c2
-make
-cd ..
+# Generate build_config.h
+if [ ! -d config ] ; then
+	mkdir config
+fi
+
+echo "#pragma once" > config/build_config.h
+echo "" >> config/build_config.h
+case "$FRONTEND" in
+wasm2c)
+	echo "#define BUILD_USE_WASM2C 1" >> config/build_config.h
+	;;
+w2c2)
+	echo "#define BUILD_USE_W2C2 1" >> config/build_config.h
+	;;
+esac
+if [ ! -z "$DEBUG" ]; then
+	echo "#define DEBUG 1" >> config/build_config.h
+fi
 
 # Convert cartridge to C
 if [ ! -d cart ] ; then
 	mkdir cart
 fi
-./w2c2/w2c2 -o cart/cart.c "$CARTRIDGE"
+
+case "$FRONTEND" in
+wasm2c)
+	wasm2c -o cart/cart.c -n cart "$CARTRIDGE"
+	;;
+w2c2)
+	cd w2c2
+	make
+	cd ..
+	./w2c2/w2c2 -o cart/cart.c "$CARTRIDGE"
+	;;
+esac
 
 # Compile
 case "$PLATFORM" in

@@ -15,7 +15,7 @@ PSP_EBOOT = $(BUILDDIR)/EBOOT.PBP
 vpath %.c cart src src/apu src/platform/psp
 vpath %.cpp cart src src/apu src/platform/psp
 
-CFLAGS += -Icart -Isrc -Isrc/apu -Isrc/platform/psp
+CFLAGS += -Icart -Isrc -Isrc/apu -Isrc/platform/psp -Isrc/wasm2c
 
 OBJS =	$(OBJDIR)/cart.o \
 	$(OBJDIR)/apu.o \

@@ -38,7 +38,6 @@ void w4_runtimeUpdate (void) {
     if (!(memory.systemFlags & W4_SYSTEM_PRESERVE_FRAMEBUFFER)) {
         w4_framebufferClear();
     }
-    e_update();
 }
 
 void w4_runtimeSetGamepad (int idx, uint8_t gamepad) {
