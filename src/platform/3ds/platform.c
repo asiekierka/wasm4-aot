@@ -1,5 +1,3 @@
-#include <c3d/framebuffer.h>
-#include <c3d/texenv.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <3ds.h>
@@ -47,6 +45,7 @@ void platform_init(void) {
 	ctr_init_shader(&shader, shader_shbin, shader_shbin_size);
 	AttrInfo_AddLoader(&(shader.attr), 0, GPU_FLOAT, 3); // v0 = position
 	AttrInfo_AddLoader(&(shader.attr), 1, GPU_FLOAT, 2); // v1 = texcoord
+	AttrInfo_AddLoader(&(shader.attr), 2, GPU_FLOAT, 3); // v2 = color
 	ctr_bind_shader(&shader);
 
 	Mtx_OrthoTilt(&proj_top, 0.0, 400.0, 0.0, 240.0, -1.0, 1.0, true);
@@ -56,7 +55,6 @@ void platform_init(void) {
 
 	texEnv = C3D_GetTexEnv(0);
 	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_TEXTURE0, 0, 0);
-    C3D_TexEnvColor(texEnv, 0);
 	C3D_TexEnvOpRgb(texEnv, 0, 0, 0);
 	C3D_TexEnvOpAlpha(texEnv, 0, 0, 0);
 	C3D_TexEnvFunc(texEnv, C3D_Both, GPU_MODULATE);
@@ -133,6 +131,7 @@ void platform_draw(void) {
 
 	texEnv = C3D_GetTexEnv(0);
 	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_TEXTURE0, 0, 0);
+    C3D_SetTexEnv(0, texEnv);
 
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
     C3D_FrameDrawOn(drawOnBottomScreen ? target_bottom : target_top);
@@ -151,15 +150,19 @@ void platform_draw(void) {
 	C3D_ImmDrawBegin(GPU_TRIANGLE_STRIP);
 		C3D_ImmSendAttrib(xmin, ymin, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmin, tymin, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(1.0f, 1.0f, 1.0f, 1.0f);
 
 		C3D_ImmSendAttrib(xmax, ymin, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmax, tymin, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(1.0f, 1.0f, 1.0f, 1.0f);
 
 		C3D_ImmSendAttrib(xmin, ymax, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmin, tymax, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(1.0f, 1.0f, 1.0f, 1.0f);
 
 		C3D_ImmSendAttrib(xmax, ymax, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmax, tymax, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(1.0f, 1.0f, 1.0f, 1.0f);
 	C3D_ImmDrawEnd();
 
     C3D_FrameDrawOn(!drawOnBottomScreen ? target_bottom : target_top);
@@ -169,21 +172,29 @@ void platform_draw(void) {
 	ymin = 0;
     xmax = 400;
     ymax = 240;
-	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_PRIMARY_COLOR, 0, 0);
 
-	C3D_TexBind(0, NULL);
+	C3D_TexEnvSrc(texEnv, C3D_Both, GPU_PRIMARY_COLOR, 0, 0);
+    C3D_TexEnvColor(texEnv, 0);
+    C3D_SetTexEnv(0, texEnv);
+
+    C3D_TexBind(0, NULL);
+
 	C3D_ImmDrawBegin(GPU_TRIANGLE_STRIP);
 		C3D_ImmSendAttrib(xmin, ymin, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmin, tymin, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(0.0f, 0.0f, 0.0f, 1.0f);
 
 		C3D_ImmSendAttrib(xmax, ymin, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmax, tymin, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(0.0f, 0.0f, 0.0f, 1.0f);
 
 		C3D_ImmSendAttrib(xmin, ymax, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmin, tymax, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(0.0f, 0.0f, 0.0f, 1.0f);
 
 		C3D_ImmSendAttrib(xmax, ymax, 0.0f, 0.0f);
 		C3D_ImmSendAttrib(txmax, tymax, 0.0f, 0.0f);
+        C3D_ImmSendAttrib(0.0f, 0.0f, 0.0f, 1.0f);
 	C3D_ImmDrawEnd();
 
 	C3D_FrameEnd(0);
