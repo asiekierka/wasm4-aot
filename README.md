@@ -11,3 +11,7 @@ Supported platforms:
   * gba
   * nds
   * 3ds
+
+## License
+
+The engine as a whole is licensed under the terms of the MIT license. The individual copyright notices are provided alongside this README file.

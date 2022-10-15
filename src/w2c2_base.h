@@ -428,6 +428,10 @@ typedef struct {
 } wasmMemory;
 extern U8* w4_memory_raw;
 
+static __inline__ U32 wasmGrowMemory(wasmMemory* memory, U32 delta) {
+    return -1;
+}
+
 #if WASM_ENDIAN == WASM_BIG_ENDIAN
 static __inline__ void load_data(void *dest, const void *src, size_t n) {
     size_t i = 0;
