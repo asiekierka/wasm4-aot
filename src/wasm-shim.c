@@ -10,6 +10,7 @@ static wasmMemory wasm_shim_memory = {
 };
 
 wasmMemory *m_env_memory = &wasm_shim_memory;
+uint8_t *w4_memory_raw = (uint8_t*) &w4_memory;
 
 #define AS_NATIVE_PTR(x) (((uint8_t*) &w4_memory) + (x))
 

@@ -578,29 +578,48 @@ void w4_framebufferBlit_tpl (const uint8_t* sprite, int dstX, int dstY, int widt
 
     // Iterate pixels in rectangle
     if (!flipX && !flipY && !rotate) {
-        for (int y = clipYMin; y < clipYMax; y++) {
-            int bitIndex = (srcY + y) * srcStride + srcX;
-            const int ty = dstY + y;
-            for (int x = clipXMin; x < clipXMax; x++, bitIndex++) {
-                // Calculate sprite target coords
-                const int tx = dstX + x;
-                
-                // Sample the sprite to get a color index
-                int colorIdx;
-                if (bpp2) {
+        if (bpp2 && colors == 0x3210) {
+            for (int y = clipYMin; y < clipYMax; y++) {
+                int bitIndex = (srcY + y) * srcStride + srcX;
+                const int ty = dstY + y;
+                for (int x = clipXMin; x < clipXMax; x++, bitIndex++) {
+                    // Calculate sprite target coords
+                    const int tx = dstX + x;
+                    
+                    // Sample the sprite to get a color index
                     uint8_t byte = sprite[bitIndex >> 2];
                     int shift = 6 - ((bitIndex & 0x03) << 1);
-                    colorIdx = (byte >> shift) & 0x3;
-                } else {
-                    uint8_t byte = sprite[bitIndex >> 3];
-                    int shift = 7 - (bitIndex & 0x07);
-                    colorIdx = (byte >> shift) & 0x1;
+                    uint8_t dc = (byte >> shift) & 0x3;
+                    if (dc != 0) {
+                        drawPoint((dc - 1) & 0x03, tx, ty);
+                    }
                 }
+            }
+        } else {
+            for (int y = clipYMin; y < clipYMax; y++) {
+                int bitIndex = (srcY + y) * srcStride + srcX;
+                const int ty = dstY + y;
+                for (int x = clipXMin; x < clipXMax; x++, bitIndex++) {
+                    // Calculate sprite target coords
+                    const int tx = dstX + x;
+                    
+                    // Sample the sprite to get a color index
+                    int colorIdx;
+                    if (bpp2) {
+                        uint8_t byte = sprite[bitIndex >> 2];
+                        int shift = 6 - ((bitIndex & 0x03) << 1);
+                        colorIdx = (byte >> shift) & 0x3;
+                    } else {
+                        uint8_t byte = sprite[bitIndex >> 3];
+                        int shift = 7 - (bitIndex & 0x07);
+                        colorIdx = (byte >> shift) & 0x1;
+                    }
 
-                // Get the final color using the drawColors indirection
-                uint8_t dc = (colors >> (colorIdx << 2)) & 0x0f;
-                if (dc != 0) {
-                    drawPoint((dc - 1) & 0x03, tx, ty);
+                    // Get the final color using the drawColors indirection
+                    uint8_t dc = (colors >> (colorIdx << 2)) & 0x0f;
+                    if (dc != 0) {
+                        drawPoint((dc - 1) & 0x03, tx, ty);
+                    }
                 }
             }
         }

@@ -425,64 +425,7 @@ typedef struct {
     U32 pages, maxPages;
     U32 size;
 } wasmMemory;
-
-#define WASM_PAGE_SIZE 65536
-
-static
-__inline__
-void
-wasmAllocateMemory(
-    wasmMemory* memory,
-    U32 initialPages,
-    U32 maxPages
-) {
-    U32 size = initialPages * WASM_PAGE_SIZE;
-    memory->data = calloc(size, 1);
-    memory->size = size;
-    memory->pages = initialPages;
-    memory->maxPages = maxPages;
-}
-
-static
-__inline__
-U32
-wasmGrowMemory(
-    wasmMemory* memory,
-    U32 delta
-) {
-    U32 oldPages = memory->pages;
-    U32 newPages = memory->pages + delta;
-
-    if (newPages == 0) {
-        return 0;
-    }
-
-    if (newPages < oldPages || newPages > memory->maxPages) {
-        return (U32) -1;
-    }
-
-    {
-        U32 oldSize = oldPages * WASM_PAGE_SIZE;
-        U32 newSize = newPages * WASM_PAGE_SIZE;
-        U32 deltaSize = delta * WASM_PAGE_SIZE;
-        U8* newData = realloc(memory->data, newSize);
-        if (newData == NULL) {
-            return (U32) -1;
-        }
-
-#if WASM_ENDIAN == WASM_LITTLE_ENDIAN
-        memset(newData + oldSize, 0, deltaSize);
-#elif WASM_ENDIAN == WASM_BIG_ENDIAN
-        memmove(newData + newSize - oldSize, newData, oldSize);
-        memset(newData, 0, deltaSize);
-#endif
-        memory->pages = newPages;
-        memory->size = newSize;
-        memory->data = newData;
-    }
-
-    return oldPages;
-}
+extern U8* w4_memory_raw;
 
 #if WASM_ENDIAN == WASM_BIG_ENDIAN
 static __inline__ void load_data(void *dest, const void *src, size_t n) {
@@ -524,14 +467,14 @@ static __inline__ void load_data(void *dest, const void *src, size_t n) {
 #define DEFINE_LOAD(name, t1, t2, t3)                       \
     static __inline__ t3 name(wasmMemory* mem, U64 addr) {  \
         t1 result;                                          \
-        memcpy(&result, &mem->data[addr], sizeof(t1));      \
+        memcpy(&result, w4_memory_raw + addr, sizeof(t1));      \
         return (t3)(t2)result;                              \
     }
 
 #define DEFINE_STORE(name, t1, t2)                                       \
     static __inline__ void name(wasmMemory* mem, U64 addr, t2 value) {   \
         t1 wrapped = (t1)value;                                          \
-        memcpy(&mem->data[addr], &wrapped, sizeof(t1));                  \
+        memcpy(w4_memory_raw + addr, &wrapped, sizeof(t1));                  \
     }
 
 #endif
