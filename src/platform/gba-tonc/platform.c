@@ -89,3 +89,7 @@ void platform_draw_partial(int x, int y, int width, int height) {
 void platform_deinit(void) {
     
 }
+
+void* platform_init_alloc(uint32_t len) {
+    return sbrk(len);
+}

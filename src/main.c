@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "platform.h"
+#include "platform_shim.h"
 #include "runtime.h"
 #include "wasm-cart.h"
 

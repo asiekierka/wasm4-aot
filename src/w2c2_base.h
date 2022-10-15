@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include "platform_shim.h"
 
 #ifndef __bool_true_false_are_defined
 typedef enum bool {
@@ -520,7 +521,11 @@ wasmAllocateTable(
 ) {
     table->size = size;
     table->maxSize = maxSize;
+#ifdef PLATFORM_HAS_INIT_ALLOC
+    table->data = platform_init_alloc(size * sizeof(wasmFunc));
+#else
     table->data = calloc(size, sizeof(wasmFunc));
+#endif
 }
 
 #define TF(table, index, t) ((t)((table).data[index]))
