@@ -22,3 +22,7 @@ Troubleshooting:
 ## License
 
 The engine as a whole is licensed under the terms of the MIT license. The individual copyright notices are provided alongside this README file.
+
+Note that if using the wasm2c frontend instead of the w2c2 frontend, additional code is linked in which is licensed under the terms of Apache License 2.0.
+
+Note that homebrew toolchains statically link libraries of their own, which may be under distinct terms from the ones provided on the engine.
