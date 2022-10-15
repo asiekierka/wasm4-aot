@@ -33,8 +33,8 @@ bool platform_update(void) {
         | ((held_keys & KEY_DOWN) ? W4_BUTTON_DOWN : 0)
         | ((held_keys & KEY_RIGHT) ? W4_BUTTON_RIGHT : 0)
         | ((held_keys & KEY_LEFT) ? W4_BUTTON_LEFT : 0)
-        | ((held_keys & KEY_B) ? W4_BUTTON_X : 0)
-        | ((held_keys & KEY_A) ? W4_BUTTON_Z : 0);
+        | ((held_keys & KEY_A) ? W4_BUTTON_X : 0)
+        | ((held_keys & KEY_B) ? W4_BUTTON_Z : 0);
     held_keys = 0;
     REG_IME = 1;
     w4_runtimeSetGamepad(0, w4_held_keys);
