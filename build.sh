@@ -33,7 +33,7 @@ gba)
 		exit
 	fi
 	make -f Makefile.dkp-gba
-	cp wasm4-aot-gba.gba "$OUTPUT".nds
+	cp wasm4-aot-gba.gba "$OUTPUT".gba
 	;;
 nds)
 	if [ -z "$DEVKITPRO" ]; then
