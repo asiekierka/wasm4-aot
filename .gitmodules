@@ -1,0 +1,3 @@
+[submodule "w2c2"]
+	path = w2c2
+	url = https://github.com/asiekierka/w2c2
