@@ -11,6 +11,7 @@ Supported platforms:
   * gba
   * nds
   * 3ds
+  * psp
 
 ## License
 

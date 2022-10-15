@@ -51,6 +51,17 @@ nds)
 	make -f Makefile.dkp-3ds
 	cp wasm4-aot-3ds.3dsx "$OUTPUT".3dsx
 	;;
+psp)
+	make -f Makefile.psp
+	if [ -d build-psp/GAME ]; then
+		rm -r build-psp/GAME
+	fi
+	mkdir -p build-psp/GAME/"$OUTPUT"/
+	cp build-psp/EBOOT.PBP build-psp/GAME/"$OUTPUT"/
+	cd build-psp
+	zip -9 -r ../"$OUTPUT"-psp.zip GAME
+	cd ..
+	;;
 *)
 	echo "Unknown platform "$PLATFORM"!"
 	exit

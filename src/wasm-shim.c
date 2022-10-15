@@ -14,7 +14,7 @@ uint8_t *w4_memory_raw = (uint8_t*) &w4_memory;
 
 #define AS_NATIVE_PTR(x) (((uint8_t*) &w4_memory) + (x))
 
-void trap(Trap) {
+void trap(Trap t) {
     abort();
 }
 
