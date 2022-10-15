@@ -27,12 +27,8 @@
 		distribution.
 
 ---------------------------------------------------------------------------------*/
+#include <stdbool.h>
 #include <nds.h>
-#include <dswifi7.h>
-#include <maxmod7.h>
-#include <nds/arm7/audio.h>
-#include <nds/fifocommon.h>
-#include <nds/interrupts.h>
 #include "platform_shim.h"
 #ifdef PLATFORM_HAS_APU
 #include "apu.h"

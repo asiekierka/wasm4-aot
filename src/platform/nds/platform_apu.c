@@ -1,9 +1,7 @@
-#include <nds/arm9/cache.h>
-#include <nds/fifocommon.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <nds.h>
-#include "apu/apu.h"
+#include "apu.h"
 #include "platform.h"
 
 // TODO: Accurate noise

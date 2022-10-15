@@ -16,8 +16,7 @@ int main(int argc, char **argv) {
 
     e_start();
 
-    while (true) {
-        platform_update();
+    while (platform_update()) {
         w4_runtimeUpdate();
         platform_draw();
     }

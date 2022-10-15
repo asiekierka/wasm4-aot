@@ -1,8 +1,5 @@
 #include <stdint.h>
 #include <tonc.h>
-#include <tonc_bios.h>
-#include <tonc_memdef.h>
-#include <tonc_memmap.h>
 #include "runtime.h"
 
 EWRAM_BSS
@@ -29,7 +26,7 @@ void platform_init(void) {
     REG_DISPCNT = DCNT_MODE4 | DCNT_BG2;
 }
 
-void platform_update(void) {
+bool platform_update(void) {
     REG_IME = 0;
     uint8_t w4_held_keys =
         ((held_keys & KEY_UP) ? W4_BUTTON_UP : 0)
@@ -41,6 +38,7 @@ void platform_update(void) {
     held_keys = 0;
     REG_IME = 1;
     w4_runtimeSetGamepad(0, w4_held_keys);
+    return true;
 }
 
 void platform_draw(void) {

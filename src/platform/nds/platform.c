@@ -1,9 +1,3 @@
-#include <nds/arm9/console.h>
-#include <nds/arm9/input.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/interrupts.h>
-#include <nds/system.h>
 #include <stdint.h>
 #include <nds.h>
 #include "platform.h"
@@ -60,7 +54,7 @@ void platform_init(void) {
 #endif
 }
 
-void platform_update(void) {
+bool platform_update(void) {
     scanKeys();
     if (keysDown() & (KEY_L | KEY_R)) {
         lcdSwap();
@@ -74,6 +68,7 @@ void platform_update(void) {
         | ((held_keys & KEY_B) ? W4_BUTTON_X : 0)
         | ((held_keys & KEY_A) ? W4_BUTTON_Z : 0);
     w4_runtimeSetGamepad(0, w4_held_keys);
+    return true;
 }
 
 ITCM_CODE

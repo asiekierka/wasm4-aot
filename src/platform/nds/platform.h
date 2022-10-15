@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define PLATFORM_APU_SAMPLE_RATE 120
@@ -10,7 +11,7 @@
 #define PLATFORM_HAS_INIT_ALLOC 1
 
 void platform_init(void);
-void platform_update(void);
+bool platform_update(void);
 void platform_draw(void);
 void platform_deinit(void);
 void* platform_init_alloc(uint32_t len);
