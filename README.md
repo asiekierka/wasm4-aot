@@ -2,6 +2,18 @@
 
 Ahead-of-time-compiled [WASM-4](https://wasm4.org/) fantasy console runtime port, designed with homebrew/embedded platforms in mind.
 
+## How does it work?
+
+The official WASM-4 repository comes with two runtimes:
+
+  * native - using a fast runtime WebAssembly implementation, a choice of the [wasm3](https://github.com/wasm3/wasm3) interpreter or [Wasmer](https://github.com/wasmerio/wasmer),
+  * web - using the browser's built-in WebAsssembly JIT.
+
+This repository provides an alternate approach: using either [w2c2](https://github.com/turbolent/w2c2) or [wasm2c](https://github.com/WebAssembly/wabt/tree/main/wasm2c)
+to transpile the provided WebAssembly file to C, then statically link it with a slimmed-down WebAssembly runtime. This comes with some trade-offs - you need to
+pre-compile the WASM file, but it allows for using compilers to do state-of-the-art link-time optimization. This is particularly useful for porting WebAssembly
+software (like WASM-4 games) to low-end platforms, like microcontrollers or "retro" handhelds.
+
 ## Building
 
     $ ./build.sh file.wasm platform [output_file]
