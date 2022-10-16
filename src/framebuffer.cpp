@@ -578,6 +578,8 @@ void w4_framebufferBlit_tpl (const uint8_t* sprite, int dstX, int dstY, int widt
 
     // Iterate pixels in rectangle
     if (!flipX && !flipY && !rotate) {
+        dstX += clipXMin;
+        dstY += clipYMin;
         if (bpp2 && colors == 0x3210) {
             int ty = dstY;
             for (int y = clipYMin; y < clipYMax; y++, ty++) {
