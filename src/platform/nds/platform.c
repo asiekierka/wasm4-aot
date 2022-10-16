@@ -84,7 +84,7 @@ bool platform_update(void) {
     return true;
 }
 
-ITCM_CODE
+__attribute__((section(".itcm"), long_call, noinline))
 void platform_draw(void) {
 #ifdef PLATFORM_HAS_APU
     // can be run asynchronously - framebuffer blitting takes a fair few CPU cycles.
@@ -103,6 +103,7 @@ void platform_draw(void) {
     uint32_t *vram = (uint32_t*) BG_GFX;
     uint8_t *src = w4_memory.framebuffer;
     for (int y = 0; y < W4_HEIGHT; y++, vram += ((256 - 160) >> 2)) {
+        #pragma GCC unroll 64
         for (int x = 0; x < W4_WIDTH; x += 4, vram++, src++) {
             *vram = bpp_2_8_table[*src];
         }
