@@ -91,8 +91,8 @@ void apu_tick(uint32_t value, void * userdata) {
 			if (volume > 127) volume = 127;
 			SCHANNEL_TIMER(8+i) = -(2094624/freq);
 			SCHANNEL_CR(8+i) = SCHANNEL_ENABLE | SOUND_REPEAT | SOUND_FORMAT_PSG
-				| w4_to_nds_duty(chn->pulse.dutyCycle)
-				| w4_to_nds_pan(chn->pan)
+				| w4_to_nds_duty(chn[i].pulse.dutyCycle)
+				| w4_to_nds_pan(chn[i].pan)
 				| SOUND_VOL(volume);
 		} else {
 			SCHANNEL_CR(8+i) = 0;
@@ -107,7 +107,7 @@ void apu_tick(uint32_t value, void * userdata) {
 			freq *= 32;
 			SCHANNEL_TIMER(10) = -(16756991/freq);
 			SCHANNEL_CR(10) = SCHANNEL_ENABLE | SOUND_REPEAT | SOUND_FORMAT_8BIT
-				| w4_to_nds_pan(chn->pan)
+				| w4_to_nds_pan(chn[i].pan)
 				| SOUND_VOL(volume);
 		} else {
 			SCHANNEL_CR(10) = 0;
@@ -121,7 +121,7 @@ void apu_tick(uint32_t value, void * userdata) {
 			uint32_t freq_real = ((uint64_t) (freq * freq) * 44100) / 1000000;
 			SCHANNEL_TIMER(15) = -(16756991/freq_real);
 			SCHANNEL_CR(15) = SCHANNEL_ENABLE | SOUND_REPEAT | SOUND_FORMAT_PSG
-				| w4_to_nds_pan(chn->pan)
+				| w4_to_nds_pan(chn[i].pan)
 				| SOUND_VOL(volume);
 		} else {
 			SCHANNEL_CR(15) = 0;
