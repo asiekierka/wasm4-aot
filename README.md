@@ -16,7 +16,7 @@ software (like WASM-4 games) to low-end platforms, like microcontrollers or "ret
 
 ## Building
 
-    $ ./build.sh file.wasm platform [output_file]
+    $ ./build.sh file.wasm [platform] [output_file]
 
 Supported platforms:
 
@@ -30,6 +30,14 @@ Troubleshooting:
   * `w2c2: unsupported opcode unknown` - use the wasm2c frontend instead:
     * Install wabt (**1.0.30 only**), add to PATH
     * Run `./build.sh -f wasm2c file.wasm ...`
+
+## Building in a local docker container
+  To build for `gba`, `nds`, and `3ds` platforms with docker:
+
+    $ docker build -t wasm4-aot-image .
+    $ docker run -v $PWD:/pwd_dir --rm wasm4-aot-image ./build.sh -f wasm2c /pwd_dir/cart.wasm [platform] /pwd_dir/[output_file]
+
+  Other platforms: TBD
 
 ## License
 
