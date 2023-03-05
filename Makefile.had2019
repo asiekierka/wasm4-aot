@@ -1,0 +1,9 @@
+CFLAGS = -O3
+CPPFLAGS = -O3
+
+APPNAME = wasm4-aot-had2019
+SRCDIRS = src src/platform/had2019 cart
+INCLUDEDIRS = config src src/platform/had2019 cart src/wasm2c
+APPSSDK_DIR ?= ../apps-sdk
+
+include $(APPSSDK_DIR)/sdk.mk
