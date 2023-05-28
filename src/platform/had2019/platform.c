@@ -9,12 +9,17 @@
 #define FB_HEIGHT 320
 #define PAL_OFFSET_COARSE 16
 #define PAL_OFFSET_FINE 1
+#define PAL_OFFSET_FINE8 (PAL_OFFSET_FINE | (PAL_OFFSET_FINE << 4))
 
 w4_Memory w4_memory;
 uint8_t *fbmem;
 uint32_t cur_vbl_ctr;
 static uint8_t held_keys;
 static uint32_t last_draw = 0;
+
+const uint32_t bpp_2_8_table[256] = {
+#include "fb_table.inc"
+};
 
 void wait_for_vblank(uint32_t cur_vbl_ctr) {
     while (GFX_REG(GFX_VBLCTR_REG) <= cur_vbl_ctr);
@@ -88,28 +93,19 @@ void platform_draw(void) {
 
     // Draw pixels
     int n = 0;
-    for (int y = 0; y < 160; y++) {
-        uint8_t *fbline_odd = fbmem + ((FB_WIDTH/2) * ((y<<1) + 0)) + (80/2);
-        uint8_t *fbline_even = fbmem + ((FB_WIDTH/2) * ((y<<1) + 1)) + (80/2);
+    //uint32_t *fbline_odd = (uint32_t*) (fbmem + (80 / 2));
+    //uint32_t *fbline_even = fbline_odd + (FB_WIDTH/8);
+    for (int y = 0; y < 160; y++/*, fbline_odd += (FB_WIDTH/4), fbline_even += (FB_WIDTH/4) */) {
+        uint32_t *fbline_odd = (uint32_t*) ((uint8_t*) (fbmem + ((FB_WIDTH/2) * ((y<<1) + 0)) + (80/2)));
+        uint32_t *fbline_even = (uint32_t*) ((uint8_t*) (fbmem + ((FB_WIDTH/2) * ((y<<1) + 1)) + (80/2)));
         for (int x = 0; x < 160; x+=4, n++) {
             uint8_t quartet = w4_memory.framebuffer[n];
-            // get 4x 2-bit pixels from WASM4 framebuffer
-            int dot0 = (quartet & 0b00000011) >> 0;
-            int dot1 = (quartet & 0b00001100) >> 2;
-            int dot2 = (quartet & 0b00110000) >> 4;
-            int dot3 = (quartet & 0b11000000) >> 6;
 
-            // one byte of framebuffer = 2x 4-bit pixels
-            *fbline_odd++ = (dot0+PAL_OFFSET_FINE) << 4 | (dot0+PAL_OFFSET_FINE);
-            *fbline_odd++ = (dot1+PAL_OFFSET_FINE) << 4 | (dot1+PAL_OFFSET_FINE);
-            *fbline_odd++ = (dot2+PAL_OFFSET_FINE) << 4 | (dot2+PAL_OFFSET_FINE);
-            *fbline_odd++ = (dot3+PAL_OFFSET_FINE) << 4 | (dot3+PAL_OFFSET_FINE);
-            *fbline_even++ = (dot0+PAL_OFFSET_FINE) << 4 | (dot0+PAL_OFFSET_FINE);
-            *fbline_even++ = (dot1+PAL_OFFSET_FINE) << 4 | (dot1+PAL_OFFSET_FINE);
-            *fbline_even++ = (dot2+PAL_OFFSET_FINE) << 4 | (dot2+PAL_OFFSET_FINE);
-            *fbline_even++ = (dot3+PAL_OFFSET_FINE) << 4 | (dot3+PAL_OFFSET_FINE);
+            *fbline_odd++ = bpp_2_8_table[quartet];
+            //*fbline_even++ = bpp_2_8_table[quartet];
         }
-        cache_flush(fbline_odd, fbline_even + (FB_WIDTH/2));
+        //cache_flush(fbline_odd, fbline_even + (FB_WIDTH/2));
+        cache_flush(fbline_odd, fbline_odd + (FB_WIDTH/2));
     }
 
     //cache_flush(fbmem, fbmem + (FB_WIDTH/2) * FB_HEIGHT);
