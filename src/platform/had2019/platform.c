@@ -6,12 +6,11 @@
 #include "runtime.h"
 
 #define FB_WIDTH 480
-#define FB_LINE_PITCH 512
+#define FB_LINE_PITCH 256 // in bytes, 512 pixels wide
 #define FB_HEIGHT 320
-#define FB_LINE_OFFSET 40 //80>>1
+#define FB_LINE_OFFSET 40 // start drawing line from x == 80 (pixels)
 #define PAL_OFFSET_COARSE 16
 #define PAL_OFFSET_FINE 1
-#define PAL_OFFSET_FINE8 (PAL_OFFSET_FINE | (PAL_OFFSET_FINE << 4))
 
 w4_Memory w4_memory;
 uint8_t *fbmem;
@@ -43,23 +42,23 @@ void platform_init(void) {
     GFX_REG(GFX_LAYEREN_REG) = 0;
 
     // Allocate framebuffer memory
-    fbmem = calloc(FB_HEIGHT, FB_LINE_PITCH/2);
+    fbmem = calloc(FB_HEIGHT, FB_LINE_PITCH);
     //printf("wasm4-aot: framebuffer allocated @ 0x%p\n", fbmem);
     // Configure graphics pipeline:
     // - palette entries offset (we're leaving first 16 colors to IPL)
-    // - framebuffer width (512 to make it easier to calculate offsets)
-    GFX_REG(GFX_FBPITCH_REG) = (PAL_OFFSET_COARSE<<GFX_FBPITCH_PAL_OFF)|(FB_LINE_PITCH<<GFX_FBPITCH_PITCH_OFF);
+    // - framebuffer width (512 pixels/256 bytes to make it easier to calculate offsets)
+    GFX_REG(GFX_FBPITCH_REG) = (PAL_OFFSET_COARSE << GFX_FBPITCH_PAL_OFF) | (FB_LINE_PITCH << (GFX_FBPITCH_PITCH_OFF + 1));
     // - framebuffer layer address
     GFX_REG(GFX_FBADDR_REG) = ((uint32_t)fbmem);
 
     // Clear the framebuffer
-    for (int i = 0; i < ((FB_LINE_PITCH/2) * FB_HEIGHT); i++) {
+    for (int i = 0; i < ((FB_LINE_PITCH) * FB_HEIGHT); i++) {
         fbmem[i] = 0;
     }
 
     // Reenable tile A and framebuffer (4-bit) layers
-    GFX_REG(GFX_LAYEREN_REG) = GFX_LAYEREN_FB|GFX_LAYEREN_TILEA;
-    cache_flush(fbmem, fbmem + (FB_LINE_PITCH/2) * FB_HEIGHT);
+    GFX_REG(GFX_LAYEREN_REG) = GFX_LAYEREN_FB | GFX_LAYEREN_TILEA;
+    cache_flush(fbmem, fbmem + (FB_LINE_PITCH * FB_HEIGHT));
 
     //cur_vbl_ctr = GFX_REG(GFX_VBLCTR_REG);
 }
@@ -94,25 +93,23 @@ void platform_draw(void) {
 
     // Draw pixels
     int n = 0;
-    //uint32_t fb_offset = fbmem + FB_LINE_OFFSET;
     uint32_t fb_line = (uint32_t ) (fbmem + FB_LINE_OFFSET);
     for (int y = 0; y < 160; y++) {
         uint32_t *fbline_odd =  (uint32_t*) ( fb_line );
-        fb_line += FB_LINE_PITCH>>1;
+        fb_line += FB_LINE_PITCH;
         uint32_t *fbline_even = (uint32_t*) ( fb_line );
-        fb_line += FB_LINE_PITCH>>1;
+        fb_line += FB_LINE_PITCH;
         for (int x = 0; x < 40; x++, n++) {
             uint8_t quartet = w4_memory.framebuffer[n];
 
             *fbline_odd++ = bpp_2_8_table[quartet];
             *fbline_even++ = bpp_2_8_table[quartet];
         }
-        
         //cache_flush(fbline_odd, fbline_even + (FB_WIDTH/2));
         //cache_flush(fbline_odd, fbline_odd + (FB_WIDTH/2));
     }
 
-    cache_flush(fbmem, fbmem + (FB_LINE_PITCH/2) * FB_HEIGHT);
+    cache_flush(fbmem, fbmem + (FB_LINE_PITCH * FB_HEIGHT));
 
     //wait_for_vblank(cur_vbl_ctr);
 }
@@ -122,5 +119,4 @@ void platform_deinit(void) {
     GFX_REG(GFX_LAYEREN_REG) = 0;
     GFX_REG(GFX_FBADDR_REG) = 0;
     free(fbmem);
-    printf("wasm4-aot: Goodbye!\n");
 }
