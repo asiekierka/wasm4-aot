@@ -148,6 +148,11 @@ pc-sdl2)
 	cd ../..
 	cp meson/build/wasm4-aot "$OUTPUT"
 	;;
+had2019)
+	GAME_NAME="$GAME_NAME" GAME_AUTHOR="$GAME_AUTHOR" \
+	make -f Makefile.had2019
+	cp wasm4-aot-had2019.elf wasm4-"$OUTPUT".elf
+	;;
 *)
 	echo "Unknown platform "$PLATFORM"!"
 	exit
