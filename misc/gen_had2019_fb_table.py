@@ -1,4 +1,4 @@
-PAL_OFFSET_FINE = 1
+PAL_OFFSET_FINE = 0
 
 for i in range(0, 256):
 	col_0 = (PAL_OFFSET_FINE + (i & 0x03)) * 17

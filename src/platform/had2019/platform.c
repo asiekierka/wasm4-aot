@@ -6,16 +6,25 @@
 #include "runtime.h"
 
 #define FB_WIDTH 480
-#define FB_LINE_PITCH 256 // in bytes, 512 pixels wide
 #define FB_HEIGHT 320
-#define FB_LINE_OFFSET 40 // start drawing line from x == 80 (pixels)
+#define FB_LINE_PITCH (FB_WIDTH / 2) // in bytes, 480 pixels wide, 4bpp
 #define PAL_OFFSET_COARSE 16
-#define PAL_OFFSET_FINE 1
+#define PAL_OFFSET_FINE 0
+
+#define WORKTILE_OFFSET 272 // 272 first tiles preloaded by IPL, to be reused for debug print
+#define WORKTILE_MEM_OFFSET (WORKTILE_OFFSET * 64) // memory offset in bytes
 
 w4_Memory w4_memory;
 uint8_t *fbmem;
 static uint8_t held_keys;
 static uint32_t last_draw = 0;
+
+extern uint32_t GFXPAL[];
+extern uint32_t GFXTILES[];
+extern uint32_t GFXTILEMAPA[];
+extern uint32_t GFXTILEMAPB[];
+extern uint32_t GFXSPRITES[];
+extern uint32_t GFXCOPPEROPS[];
 
 const uint32_t bpp_2_8_table[256] = {
 #include "fb_table.inc"
@@ -23,6 +32,16 @@ const uint32_t bpp_2_8_table[256] = {
 
 void wait_for_vblank(uint32_t cur_vbl_ctr) {
     while (GFX_REG(GFX_VBLCTR_REG) <= cur_vbl_ctr);
+}
+
+static inline void tile_b_translate(uint16_t dx, uint16_t dy) {
+    GFX_REG(GFX_TILEB_OFF) = (dy << 16) + (dx << 0);
+}
+
+static inline void draw_quadpixel_to_tile(uint32_t quad, uint16_t qx, uint16_t y) {
+    uint32_t tile_nb = (y * 10 / 16) + (qx / 4);
+    uint32_t tile_qp = ((y & 0x000f) << 4) + (qx & 0x0003);
+    GFXTILES[WORKTILE_MEM_OFFSET + (tile_nb * 16) + tile_qp] = quad;
 }
 
 void platform_init(void) {
@@ -33,21 +52,21 @@ void platform_init(void) {
     // setvbuf(f, NULL, _IONBF, 0); // make console line unbuffered
     // fprintf(f, "WASM4-AOT platform says hello!");
 
-    held_keys = 0;
-
     //printf("wasm4-aot: Hello, world!\n");
 
+    held_keys = 0;
+
     // Disable all layers, set soft gray color as a background
-    GFX_REG(GFX_BGNDCOL_REG) = 0xff00ff;
+    GFX_REG(GFX_BGNDCOL_REG) = 0x202020;
     GFX_REG(GFX_LAYEREN_REG) = 0;
 
     // Allocate framebuffer memory
     fbmem = calloc(FB_HEIGHT, FB_LINE_PITCH);
-    //printf("wasm4-aot: framebuffer allocated @ 0x%p\n", fbmem);
-    // Configure graphics pipeline:
-    // - palette entries offset (we're leaving first 16 colors to IPL)
-    // - framebuffer width (512 pixels/256 bytes to make it easier to calculate offsets)
-    GFX_REG(GFX_FBPITCH_REG) = (PAL_OFFSET_COARSE << GFX_FBPITCH_PAL_OFF) | (FB_LINE_PITCH << (GFX_FBPITCH_PITCH_OFF + 1));
+
+    // Configure framebuffer:
+    // - palette entries offset (we're leaving first 16 colors to IPL and next 4 to WASM4)
+    // - framebuffer width for static background
+    GFX_REG(GFX_FBPITCH_REG) = ((PAL_OFFSET_COARSE+4) << GFX_FBPITCH_PAL_OFF) | (FB_LINE_PITCH << (GFX_FBPITCH_PITCH_OFF + 1));
     // - framebuffer layer address
     GFX_REG(GFX_FBADDR_REG) = ((uint32_t)fbmem);
 
@@ -56,11 +75,28 @@ void platform_init(void) {
         fbmem[i] = 0;
     }
 
-    // Reenable tile A and framebuffer (4-bit) layers
-    GFX_REG(GFX_LAYEREN_REG) = GFX_LAYEREN_FB | GFX_LAYEREN_TILEA;
-    cache_flush(fbmem, fbmem + (FB_LINE_PITCH * FB_HEIGHT));
+    // TODO: Custom background on framebuffer layer
 
-    //cur_vbl_ctr = GFX_REG(GFX_VBLCTR_REG);
+    // Clear tile B layer
+    for (int x=0; x<64*64; x++) GFXTILEMAPB[x]=0;
+
+    // Fill tile B with consecutive tiles
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            GFXTILEMAPB[(y * 64) + x + 3] = WORKTILE_OFFSET + ((y * 10) + x);
+        }
+    }
+
+    // Move tile B layer 8 pixels left (pre-scaling)
+    tile_b_translate(64*8, 0);
+
+    // Scale tile B layer 2x
+    GFX_REG(GFX_TILEB_INC_COL) =        (0 << 16) + ((64 / 2) & 0xffff);
+    GFX_REG(GFX_TILEB_INC_ROW) = ((64 / 2) << 16) +        (0 & 0xffff);
+
+    // Reenable framebuffer (4-bit) and tile B layers
+    GFX_REG(GFX_LAYEREN_REG) = GFX_LAYEREN_FB | GFX_LAYEREN_TILEB;
+    cache_flush(fbmem, fbmem + (FB_LINE_PITCH * FB_HEIGHT));
 }
 
 bool platform_update(void) {
@@ -93,24 +129,17 @@ void platform_draw(void) {
 
     // Draw pixels
     int n = 0;
-    uint32_t fb_line = (uint32_t ) (fbmem + FB_LINE_OFFSET);
     for (int y = 0; y < 160; y++) {
-        uint32_t *fbline_odd =  (uint32_t*) ( fb_line );
-        fb_line += FB_LINE_PITCH;
-        uint32_t *fbline_even = (uint32_t*) ( fb_line );
-        fb_line += FB_LINE_PITCH;
-        for (int x = 0; x < 40; x++, n++) {
-            uint8_t quartet = w4_memory.framebuffer[n];
-
-            *fbline_odd++ = bpp_2_8_table[quartet];
-            *fbline_even++ = bpp_2_8_table[quartet];
+        for (int qx = 0; qx < 40; qx++, n++) {
+            uint8_t w4_pixels = w4_memory.framebuffer[n];
+            uint32_t tile_pixels = bpp_2_8_table[w4_pixels];
+            draw_quadpixel_to_tile(tile_pixels, qx, y);
         }
-        //cache_flush(fbline_odd, fbline_even + (FB_WIDTH/2));
-        //cache_flush(fbline_odd, fbline_odd + (FB_WIDTH/2));
     }
 
-    cache_flush(fbmem, fbmem + (FB_LINE_PITCH * FB_HEIGHT));
+    cache_flush(&GFXTILES[WORKTILE_OFFSET], &GFXTILES[WORKTILE_OFFSET + 100]);
 
+    // Wait until next frame (?)
     //wait_for_vblank(cur_vbl_ctr);
 }
 
