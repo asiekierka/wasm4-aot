@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM devkitpro/devkitarm
+FROM devkitpro/devkitarm:20240202
 COPY . .
 RUN wget https://github.com/WebAssembly/wabt/releases/download/1.0.30/wabt-1.0.30-ubuntu.tar.gz && \
     tar xzf wabt-1.0.30-ubuntu.tar.gz
